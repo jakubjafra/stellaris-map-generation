@@ -3,6 +3,8 @@ import json
 
 
 def generate(dot, data, for_map_generation):
+    clusters = {}
+
     for name in data['stars']:
         star = data['stars'][name]
 
@@ -13,17 +15,23 @@ def generate(dot, data, for_map_generation):
         if len(star['influencedBy']) > 0:
             influence_id = star['influencedBy'][0]['controlledBy']
             empire = data['empires'][influence_id]
-            color = empire['color']
+            color = empire['id']
 
-        def put_node():
-            dot.node(name, label=name, clustercolor=color, pos=pos, shape='none')
+        def put_node(graph):
+            graph.node(name, pos=pos, shape='none', clustercolor=color)
 
         if for_map_generation:
             if empire:
-                put_node()
-                dot.edge(name, empire['capital']['star'], dir='none', color=color)
+                if empire['id'] not in clusters:
+                    clusters[empire['id']] = Graph(name='cluster{}'.format(empire['id']), graph_attr={'id': empire['id'], 'name': empire['name']})
+
+                put_node(clusters[empire['id']])
         else:
-            put_node()
+            put_node(dot)
+
+    for name in clusters:
+        cluster = clusters[name]
+        dot.subgraph(graph=cluster)
 
 
 starsFile = open('../../samples/end-game/stars.json')

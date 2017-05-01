@@ -63,3 +63,4 @@ typings/
 .DS_Store
 .idea
 utils/star-graph/tests
+samples

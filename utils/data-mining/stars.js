@@ -84,8 +84,10 @@ module.exports = function(raw){
                 return;
 
             let empire = {
+                id: `${i}`,
+                name: o["name"],
                 type: o["type"],
-                color: o["flag"] !== undefined ? o["flag"].colors[1] : undefined
+                colors: o["flag"] !== undefined ? o["flag"].colors : undefined
             };
 
             if(o.type !== "primitive" && o["controlled_planets"] !== undefined) {
@@ -94,7 +96,7 @@ module.exports = function(raw){
 
                     if(data.planets[planetId].capital){
                         empire.capital = {
-                            planet: planetId,
+                            planet: `${planetId}`,
                             star: planetToStar[planetId]
                         }
                     }
