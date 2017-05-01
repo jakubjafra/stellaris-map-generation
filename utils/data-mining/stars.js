@@ -5,29 +5,44 @@ module.exports = function(raw){
             .map(id => obj[key][id]);
     }
 
+    function _toArray(sth){
+        if(sth === null || sth === undefined)
+            return [];
+
+        let sthArr = sth;
+
+        if(!Array.isArray(sth))
+            sthArr = [ sth ];
+
+        return sthArr;
+    }
+
     let data = {
         stars: {},
         planets: {},
         empires: {}
     };
 
+    let planetToStar = {};
+
     _byTopKey(raw, "galactic_object")
         .forEach(o => {
-            let planets = o.planet;
-            if(planets === null)
-                planets = [];
-            if(!Array.isArray(planets))
-                planets = [ planets ];
+            let planets = _toArray(o['planet']);
 
             data.stars[o.name] = {
                 cords: {
-                    x: o.coordinate.x,
-                    y: o.coordinate.y
+                    x: -o.coordinate.x,
+                    y: -o.coordinate.y
                 },
                 type: o.type,
                 name: o.name,
                 planets: planets.map(pId => `${pId}`)
             };
+
+            planets
+                .forEach(planetId => {
+                    planetToStar[planetId] = o.name;
+                });
         });
 
     Object
@@ -39,10 +54,15 @@ module.exports = function(raw){
                 colonized: false
             };
 
-            if(o.pop !== undefined){
+            if(o['pop'] !== undefined){
                 planet.colonized = true;
-                planet.populationCount = o.pop.length;
+                planet.populationCount = o['pop'].length;
             }
+
+            _toArray(o['timed_modifier']).forEach(modifier => {
+                if(modifier['modifier'] === 'capital')
+                    planet.capital = true;
+            });
 
             data.planets[i] = planet;
         });
@@ -55,7 +75,7 @@ module.exports = function(raw){
             if(o["type"] === undefined)
                 return;
 
-            data.empires[i] = {
+            let empire = {
                 type: o["type"],
                 color: o["flag"] !== undefined ? o["flag"].colors[0] : undefined
             };
@@ -63,8 +83,17 @@ module.exports = function(raw){
             if(o.type !== "primitive" && o["owned_planets"] !== undefined) {
                 o["owned_planets"].forEach(planetId => {
                     data.planets[planetId].controlledBy = i;
+
+                    if(data.planets[planetId].capital){
+                        empire.capital = {
+                            planet: planetId,
+                            star: planetToStar[planetId]
+                        }
+                    }
                 });
             }
+
+            data.empires[i] = empire;
         });
 
     data.stars = Object
