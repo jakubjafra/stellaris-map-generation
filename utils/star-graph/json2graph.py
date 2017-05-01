@@ -1,25 +1,38 @@
-from graphviz import Digraph
+from graphviz import Graph
 import json
 
-dot = Digraph(strict='true')
+
+def generate(dot, data, for_map_generation):
+    for name in data['stars']:
+        star = data['stars'][name]
+
+        pos = '{},{}!'.format(star['cords']['x'], star['cords']['y'])
+        empire = None
+        color = None
+
+        if len(star['influencedBy']) > 0:
+            influence_id = star['influencedBy'][0]['controlledBy']
+            empire = data['empires'][influence_id]
+            color = empire['color']
+
+        def put_node():
+            dot.node(name, label=name, clustercolor=color, pos=pos, shape='none')
+
+        if for_map_generation:
+            if empire:
+                put_node()
+                dot.edge(name, empire['capital']['star'], dir='none', color=color)
+        else:
+            put_node()
+
 
 starsFile = open('../../samples/end-game/stars.json')
 data = json.loads(starsFile.read())
 
-for name in data['stars']:
-    star = data['stars'][name]
+dot = Graph(strict='true')
+generate(dot, data, for_map_generation=True)
+dot.render('./tests/empires.dot')
 
-    pos = '{},{}!'.format(2 * star['cords']['x'], 2 * star['cords']['y'])
-    empire = None
-    color = None
-
-    if len(star['influencedBy']) > 0:
-        influenceId = star['influencedBy'][0]['controlledBy']
-        empire = data['empires'][influenceId]
-        color = empire['color']
-
-    dot.node(name, label=name, color=color, pos=pos, shape='none')
-    if empire:
-        dot.edge(name, empire['capital']['star'], dir='none', color=color)
-
-dot.render('./tests/test.pv')
+dot = Graph(strict='true')
+generate(dot, data, for_map_generation=False)
+dot.render('./tests/rest-stars.dot')

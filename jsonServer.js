@@ -6,7 +6,7 @@ http
         const sampleName = req.url.slice(1);
         try {
             res.writeHead(200, { 'Content-Type': 'application/json;charset=utf-8' });
-            res.end(fs.readFileSync(`./samples/${sampleName}.json`));
+            res.end(fs.readFileSync(`./samples/${sampleName}`));
         } catch(e){
             res.end('Not found.');
         }

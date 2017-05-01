@@ -19,6 +19,7 @@ module.exports = function(raw){
 
     let data = {
         stars: {},
+        starsRadius: 0,
         planets: {},
         empires: {}
     };
@@ -29,20 +30,27 @@ module.exports = function(raw){
         .forEach(o => {
             let planets = _toArray(o['planet']);
 
-            data.stars[o.name] = {
+            let star = {
                 cords: {
-                    x: -o.coordinate.x,
-                    y: -o.coordinate.y
+                    x: -o['coordinate']['x'],
+                    y: -o['coordinate']['y']
                 },
-                type: o.type,
-                name: o.name,
+                type: o['type'],
+                name: o['name'],
                 planets: planets.map(pId => `${pId}`)
             };
+
+            const distance = Math.sqrt(Math.pow(star.cords.x, 2) + Math.pow(star.cords.y, 2));
+
+            if(distance > data.starsRadius)
+                data.starsRadius = Math.ceil(distance);
 
             planets
                 .forEach(planetId => {
                     planetToStar[planetId] = o.name;
                 });
+
+            data.stars[o['name']] = star;
         });
 
     Object
@@ -77,11 +85,11 @@ module.exports = function(raw){
 
             let empire = {
                 type: o["type"],
-                color: o["flag"] !== undefined ? o["flag"].colors[0] : undefined
+                color: o["flag"] !== undefined ? o["flag"].colors[1] : undefined
             };
 
-            if(o.type !== "primitive" && o["owned_planets"] !== undefined) {
-                o["owned_planets"].forEach(planetId => {
+            if(o.type !== "primitive" && o["controlled_planets"] !== undefined) {
+                o["controlled_planets"].forEach(planetId => {
                     data.planets[planetId].controlledBy = i;
 
                     if(data.planets[planetId].capital){
