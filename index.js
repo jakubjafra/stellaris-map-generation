@@ -1,6 +1,6 @@
 const fs = require('fs');
 const jomini = require('jomini');
-const handleData = require('./mining/stars.js');
+const handleData = require('./utils/data-mining/stars.js');
 
 const testedFile = 'end-game';
 

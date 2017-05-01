@@ -1,15 +1,18 @@
 module.exports = function(raw){
+    function _byTopKey(obj, key){
+        return Object
+            .keys(obj[key])
+            .map(id => obj[key][id]);
+    }
+
     let data = {
         stars: {},
         planets: {},
         empires: {}
     };
 
-    Object
-        .keys(raw.galactic_object)
-        .forEach(i => {
-            const o = raw.galactic_object[i];
-
+    _byTopKey(raw, "galactic_object")
+        .forEach(o => {
             let planets = o.planet;
             if(planets === null)
                 planets = [];
@@ -28,9 +31,9 @@ module.exports = function(raw){
         });
 
     Object
-        .keys(raw.planet)
+        .keys(raw["planet"])
         .forEach(i => {
-            const o = raw.planet[i];
+            const o = raw["planet"][i];
 
             let planet = {
                 colonized: false
@@ -45,17 +48,20 @@ module.exports = function(raw){
         });
 
     Object
-        .keys(raw.country)
+        .keys(raw["country"])
         .forEach(i => {
-            const o = raw.country[i];
+            const o = raw["country"][i];
+
+            if(o["type"] === undefined)
+                return;
 
             data.empires[i] = {
-                type: o.type,
-                color: o.flag !== undefined ? o.flag.colors[0] : undefined
+                type: o["type"],
+                color: o["flag"] !== undefined ? o["flag"].colors[0] : undefined
             };
 
-            if(o.type !== "primitive" && o.owned_planets !== undefined) {
-                o.owned_planets.forEach(planetId => {
+            if(o.type !== "primitive" && o["owned_planets"] !== undefined) {
+                o["owned_planets"].forEach(planetId => {
                     data.planets[planetId].controlledBy = i;
                 });
             }
@@ -72,7 +78,7 @@ module.exports = function(raw){
                 .map(planetId => data.planets[planetId])
                 .filter(planet => !!planet.controlledBy)
                 .filter(planet => { return { controlledBy: planet.controlledBy, populationCount: planet.populationCount }; })
-                // remove duplicates:
+                // remove duplicates: TODO: ???
                 .sort((a, b) => b.populationCount - a.populationCount)
                 .filter((item, pos, ary) => !pos || item.controlledBy != ary[pos - 1].controlledBy);
 
