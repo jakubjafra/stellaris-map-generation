@@ -10,9 +10,9 @@ def generate(dot, data, for_map_generation):
 
         pos = '{},{}!'.format(star['cords']['x'], star['cords']['y'])
         empire = None
-        color = '{:02X}'.format(i)
+        color = '#{:06X}'.format(i)
 
-        if len(star['influencedBy']) > 0:
+        if for_map_generation and len(star['influencedBy']) > 0:
             influence_id = star['influencedBy'][0]['controlledBy']
             empire = data['empires'][influence_id]
             color = empire['id']
