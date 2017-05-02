@@ -5,12 +5,12 @@ import json
 def generate(dot, data, for_map_generation):
     clusters = {}
 
-    for name in data['stars']:
+    for i, name in enumerate(data['stars']):
         star = data['stars'][name]
 
         pos = '{},{}!'.format(star['cords']['x'], star['cords']['y'])
         empire = None
-        color = None
+        color = '{:02X}'.format(i)
 
         if len(star['influencedBy']) > 0:
             influence_id = star['influencedBy'][0]['controlledBy']
@@ -27,7 +27,10 @@ def generate(dot, data, for_map_generation):
 
                 put_node(clusters[empire['id']])
         else:
-            put_node(dot)
+            if i not in clusters:
+                clusters[i] = Graph(name='cluster{}'.format(i), graph_attr={'id': name})
+
+            put_node(clusters[i])
 
     for name in clusters:
         cluster = clusters[name]
@@ -43,4 +46,4 @@ dot.render('./tests/empires.dot')
 
 dot = Graph(strict='true')
 generate(dot, data, for_map_generation=False)
-dot.render('./tests/rest-stars.dot')
+dot.render('./tests/all-stars.dot')

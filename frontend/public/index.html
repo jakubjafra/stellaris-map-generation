@@ -49,7 +49,7 @@
             if(lookupTable[colorName] !== undefined)
                 return lookupTable[colorName];
             else {
-                console.warn(`Color not found: ${colorName}!`);
+                console.log(`Color not found: ${colorName}!`);
                 return colorName;
             }
         }
@@ -57,7 +57,7 @@
         (function(){
             let scene = new THREE.Scene();
             let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
-            camera.position.set(0, -1200, 1200);
+            camera.position.set(0, 0, 1200);
             camera.lookAt(new THREE.Vector3(0, 0, 0));
 
             let renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
@@ -79,6 +79,10 @@
             const extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
 
             request('/api/end-game/stars.json', function(data) {
+                plotPopulation(data);
+            });
+
+            function plotEmpires(data){
                 request('/api/end-game/graphs/_empires-influence.json', function(empiresInfluence) {
                     Object
                         .keys(empiresInfluence)
@@ -105,7 +109,61 @@
                             console.warn = originalConsoleWarn;
                         });
                 });
-            });
+            }
+
+            function plotPopulation(data){
+                request('/api/end-game/graphs/_all-stars-influence.json', function(starsInfluence) {
+                    let maxPopulationCount = 0;
+
+                    Object
+                        .keys(starsInfluence)
+                        .map(key => starsInfluence[key])
+                        .map(star => {
+                            let starData = data['stars'][star['id']];
+
+                            let populationCount = 0;
+
+                            if(starData['influencedBy'].length > 0)
+                                if(starData['influencedBy'][0]['colonized'])
+                                    populationCount = starData['influencedBy'][0]['populationCount'];
+
+                            if(populationCount > maxPopulationCount)
+                                maxPopulationCount = populationCount;
+
+                            return star;
+                        })
+                        .forEach(star => {
+                            let starData = data['stars'][star['id']];
+
+                            let populationCount = 0;
+
+                            if(starData['influencedBy'].length > 0)
+                                if(starData['influencedBy'][0]['colonized'])
+                                    populationCount = starData['influencedBy'][0]['populationCount'];
+
+                            let influence = populationCount / 5;
+
+                            let color = `rgb(${Math.floor(255 * (populationCount / maxPopulationCount))}, 0, 0)`;
+
+                            const originalConsoleWarn = console.warn;
+                            console.warn = () => undefined;
+                            star['polygons'].forEach(polygon => {
+                                let points = polygon
+                                    .map(vertex => new THREE.Vector2(parseFloat(vertex['x']), parseFloat(vertex['y'])));
+
+                                let shape = new THREE.Shape(points);
+                                let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+
+                                let mesh = new THREE.Mesh(geometry, new THREE.MeshToonMaterial({ color }));
+                                mesh.position.set(0, 0, 0);
+                                mesh.rotation.set(0, 0, 0);
+                                mesh.scale.set(1, 1, (1 + influence));
+                                scene.add(mesh);
+                            });
+                            console.warn = originalConsoleWarn;
+                        });
+                });
+            }
         })();
     </script>
 </body>

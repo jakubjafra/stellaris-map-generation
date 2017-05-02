@@ -1,13 +1,18 @@
 import re
 import json
+import sys
 
-influences_file = open('./tests/empires-influence.dot', 'r')
+file_name = sys.argv[1]
+
+influences_file = open('./tests/{}.dot'.format(file_name), 'r')
 influences = influences_file.read()
 influences_file.close()
 
 background = re.search(r'graph\s\[_background=\"((.|\n)+?)\"', influences, flags=re.M | re.S).group(1)
 background = background.replace('\\', '').replace('\n', '')
 layers_raw = background.split(' c ')
+
+print len(layers_raw)
 
 layers = {}
 
@@ -28,23 +33,38 @@ for layer_str in layers_raw[1:]:
 
     layers[layer_color].append(layer_points)
 
+print len(layers)
+
 clusters_raw = influences.split('subgraph')
 
 clusters = {}
+count = 0
+
+print len(clusters_raw)
 
 for cluster_str in clusters_raw[1:]:
     cluster_str = cluster_str.split('{')[1].split('}')[0]
 
-    id_ = re.search(r'id=(\d+)', cluster_str, flags=re.M | re.S).group(1)
-    graph_color = re.search(r'clustercolor="(.+?)"', cluster_str, flags=re.M | re.S).group(1)
+    id_ = None
+    graph_color = None
+
+    try:
+        id_ = re.search(r'id=[\"]*([-\d\w \']+?)[,\n"\]]', cluster_str, flags=re.M | re.S).group(1)
+        graph_color = re.search(r'clustercolor="(.+?)"', cluster_str, flags=re.M | re.S).group(1)
+    except:
+        print cluster_str
+        exit
 
     graph_polygons = layers[graph_color]
+    count += len(graph_polygons)
 
     clusters[id_] = {
         'id': id_,
         'polygons': graph_polygons
     }
 
-graph_file = open('./tests/_empires-influence.json', 'w+')
+print count
+
+graph_file = open('./tests/_{}.json'.format(file_name), 'w+')
 graph_file.write(json.dumps(clusters))
 graph_file.close()

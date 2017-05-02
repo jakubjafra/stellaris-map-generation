@@ -4,7 +4,7 @@ border_file = open('./tests/empires-influence.dot', 'r')
 border_graph = re.search(r'(graph\s\[(.|\n)+?)\];', border_file.read(), flags=re.M | re.S).group(0)
 border_file.close()
 
-rest_file = open('./tests/rest-stars.dot', 'r')
+rest_file = open('./tests/all-stars.dot', 'r')
 rest_graph = re.search(r'graph\s{((.|\n)+)}', rest_file.read(), flags=re.M | re.S).group(1)
 rest_file.close()
 

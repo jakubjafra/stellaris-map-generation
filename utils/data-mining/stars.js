@@ -117,9 +117,23 @@ module.exports = function(raw){
                 .map(planetId => data.planets[planetId])
                 .filter(planet => !!planet.controlledBy)
                 .filter(planet => { return { controlledBy: planet.controlledBy, populationCount: planet.populationCount }; })
-                // remove duplicates: TODO: ???
-                .sort((a, b) => b.populationCount - a.populationCount)
-                .filter((item, pos, ary) => !pos || item.controlledBy != ary[pos - 1].controlledBy);
+                .reduce((prev, planet) => {
+                    let prevThis = prev.filter(prevPlanet => prevPlanet.controlledBy === planet.controlledBy);
+                    const prevOthers = prev.filter(prevPlanet => prevPlanet.controlledBy !== planet.controlledBy);
+
+                    if(prevThis.length === 0){
+                        prevThis = [planet];
+                    } else if(planet.colonized) {
+                        prevThis[0].colonized = true;
+
+                        if(prevThis[0].populationCount === undefined)
+                            prevThis[0].populationCount = 0;
+
+                        prevThis[0].populationCount += planet.populationCount;
+                    }
+
+                    return [].concat(prevThis, prevOthers);
+                }, []);
 
             return star;
         })
