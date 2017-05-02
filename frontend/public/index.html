@@ -2,6 +2,7 @@
 <head>
     <title>stellaris.social</title>
     <link rel="stylesheet" type="text/css" href="reset.css">
+    <script src="/dist/stats/stats.js"></script>
     <script src="/dist/three/three.js"></script>
     <style>
         canvas {
@@ -10,12 +11,16 @@
         }
 
         html, body {
-            background: black;
+            background: gray;
         }
     </style>
 </head>
 <body>
     <script>
+        var stats = new Stats();
+        stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+        document.body.appendChild( stats.dom );
+
         function request(theUrl, callback) {
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.onreadystatechange = function() {
@@ -60,8 +65,11 @@
 
         (function(){
             let scene = new THREE.Scene();
-            let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
-            camera.position.set(0, 0, 1200);
+            let cameraPerspective = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
+            let cameraOrthographic = new THREE.OrthographicCamera( window.innerWidth / - 1, window.innerWidth / 1, window.innerHeight / 1, window.innerHeight / - 1, 1, 3000 );
+
+            let camera = cameraPerspective;
+            camera.position.set(0, 0, 1000);
             camera.lookAt(new THREE.Vector3(0, 0, 0));
 
             let renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
@@ -77,7 +85,11 @@
             (function render() {
                 requestAnimationFrame( render );
 
+                stats.begin();
+
                 renderer.render(scene, camera);
+
+                stats.end();
             })();
 
             const extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
