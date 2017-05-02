@@ -1,0 +1,112 @@
+<html>
+<head>
+    <title>stellaris.social</title>
+    <link rel="stylesheet" type="text/css" href="reset.css">
+    <script src="/dist/three/three.js"></script>
+    <style>
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function request(theUrl, callback) {
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    callback(JSON.parse(xmlHttp.responseText));
+            };
+            xmlHttp.open("GET", theUrl, true); // true for asynchronous
+            xmlHttp.send(null);
+        }
+
+        function color2hex(colorName){
+            const lookupTable = {
+                "dark_brown": "#8b7355",
+                "burgundy": "#8b0a50",
+                "dark_blue": "#104e8b",
+                "green": "#00cc00",
+                "brown": "#f4a460",
+                "pink": "#ff1493",
+                "blue": "#00b2ee",
+                "dark_green": "#008b00",
+                "orange": "#ff8c00",
+                "purple": "#9370db",
+                "turquoise": "#40E0D0",
+                "grey": "#9e9e9e",
+                "red_orange": "#ee4000",
+                "dark_purple": "#7d26cd",
+                "teal": "#008080",
+                "dark_grey": "#636363",
+                "red": "#ee0000",
+                "indigo": "#4B0082",
+                "dark_teal": "#0E302F",
+                "black": "#000000"
+            };
+
+            if(lookupTable[colorName] !== undefined)
+                return lookupTable[colorName];
+            else {
+                console.warn(`Color not found: ${colorName}!`);
+                return colorName;
+            }
+        }
+
+        (function(){
+            let scene = new THREE.Scene();
+            let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
+            camera.position.set(0, -1200, 1200);
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+            let renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            document.body.appendChild( renderer.domElement );
+
+            var light = new THREE.AmbientLight( 0xAAAAAA );
+            scene.add( light );
+
+            var light = new THREE.HemisphereLight( 0xffffbb, 0x000000, 1 );
+            scene.add( light );
+
+            (function render() {
+                requestAnimationFrame( render );
+
+                renderer.render(scene, camera);
+            })();
+
+            const extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+
+            request('/api/end-game/stars.json', function(data) {
+                request('/api/end-game/graphs/_empires-influence.json', function(empiresInfluence) {
+                    Object
+                        .keys(empiresInfluence)
+                        .map(key => empiresInfluence[key])
+                        .forEach(empire => {
+                            const empireData = data['empires'][empire['id']];
+                            const color = color2hex(empireData['colors'][1]);
+
+                            const originalConsoleWarn = console.warn;
+                            console.warn = () => undefined;
+                            empire['polygons'].forEach(polygon => {
+                                let points = polygon
+                                    .map(vertex => new THREE.Vector2(parseFloat(vertex['x']), parseFloat(vertex['y'])));
+
+                                let shape = new THREE.Shape(points);
+                                let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+
+                                let mesh = new THREE.Mesh(geometry, new THREE.MeshToonMaterial({ color }));
+                                mesh.position.set(0, 0, 0);
+                                mesh.rotation.set(0, 0, 0);
+                                mesh.scale.set(1, 1, (1 + Math.log2(1 + parseInt(empire['id']))));
+                                scene.add(mesh);
+                            });
+                            console.warn = originalConsoleWarn;
+                        });
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

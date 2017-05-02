@@ -64,3 +64,4 @@ typings/
 .idea
 utils/star-graph/tests
 samples
+dist

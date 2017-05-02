@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "browser-request": "^0.3.3",
+    "express": "^4.15.2",
     "jomini": "^0.2.7"
   }
 }

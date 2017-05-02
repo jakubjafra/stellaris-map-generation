@@ -8,4 +8,3 @@ neato tests/empires-influence.dot -n -Tpng -o tests/empires-influence.png
 python merge.py
 neato tests/merged.dot -n -Tpng -o tests/merged.png
 neato tests/only-map.dot -n -Tpng -o tests/only-map.png
-open tests/empires-influence.png
