@@ -12,8 +12,6 @@ background = re.search(r'graph\s\[_background=\"((.|\n)+?)\"', influences, flags
 background = background.replace('\\', '').replace('\n', '')
 layers_raw = background.split(' c ')
 
-print len(layers_raw)
-
 layers = {}
 
 for layer_str in layers_raw[1:]:
@@ -23,6 +21,8 @@ for layer_str in layers_raw[1:]:
 
     layer_points = []
     for index, number in enumerate(layer_points_raw):
+        number = float(number)
+
         if index % 2 == 0:
             layer_points.append({'x': number})
         else:
@@ -33,14 +33,10 @@ for layer_str in layers_raw[1:]:
 
     layers[layer_color].append(layer_points)
 
-print len(layers)
-
 clusters_raw = influences.split('subgraph')
 
 clusters = {}
 count = 0
-
-print len(clusters_raw)
 
 for cluster_str in clusters_raw[1:]:
     cluster_str = cluster_str.split('{')[1].split('}')[0]
@@ -62,8 +58,6 @@ for cluster_str in clusters_raw[1:]:
         'id': id_,
         'polygons': graph_polygons
     }
-
-print count
 
 graph_file = open('./tests/_{}.json'.format(file_name), 'w+')
 graph_file.write(json.dumps(clusters))

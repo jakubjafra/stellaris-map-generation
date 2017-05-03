@@ -1,10 +1,4 @@
 module.exports = function(raw){
-    function _byTopKey(obj, key){
-        return Object
-            .keys(obj[key])
-            .map(id => obj[key][id]);
-    }
-
     function _toArray(sth){
         if(sth === null || sth === undefined)
             return [];
@@ -26,11 +20,19 @@ module.exports = function(raw){
 
     let planetToStar = {};
 
-    _byTopKey(raw, "galactic_object")
+    Object
+        .keys(raw['galactic_object'])
+        .map(id => {
+            let star = raw['galactic_object'][id];
+            star['id'] = id;
+
+            return star;
+        })
         .forEach(o => {
             let planets = _toArray(o['planet']);
 
             let star = {
+                id: o['id'],
                 cords: {
                     x: -o['coordinate']['x'],
                     y: -o['coordinate']['y']
@@ -50,7 +52,7 @@ module.exports = function(raw){
                     planetToStar[planetId] = o.name;
                 });
 
-            data.stars[o['name']] = star;
+            data.stars[`${o['id']}`] = star;
         });
 
     Object
@@ -87,8 +89,11 @@ module.exports = function(raw){
                 id: `${i}`,
                 name: o["name"],
                 type: o["type"],
-                colors: o["flag"] !== undefined ? o["flag"].colors : undefined
+                colors: o["flag"] !== undefined ? o["flag"].colors : undefined,
+                sectors: []
             };
+
+            let controlledPlanets = {};
 
             if(o.type !== "primitive" && o["controlled_planets"] !== undefined) {
                 o["controlled_planets"].forEach(planetId => {
@@ -100,7 +105,37 @@ module.exports = function(raw){
                             star: planetToStar[planetId]
                         }
                     }
+
+                    controlledPlanets[`${planetId}`] = `${planetId}`;
                 });
+            }
+
+            if(o['sectors'] !== undefined){
+                const sectors = o['sectors'];
+
+                empire.sectors = Object
+                    .keys(sectors)
+                    .map(id => {
+                        let sector = sectors[id];
+                        sector["id"] = `${id}`;
+
+                        return sector;
+                    })
+                    .map(sector => {
+                        return {
+                            type: sector['type'] !== undefined ? "sector" : "core",
+                            focus: sector['type'],
+                            id: sector['id'],
+                            stars: sector["galactic_object"].map(starId => `${starId}`)
+                        };
+                    })
+                    .reduce((prev, curr) => {
+                        prev[curr.id] = curr;
+                        return prev;
+                    }, {});
+
+                if(empire.sectors == [])
+                    console.log("DUPA");
             }
 
             data.empires[i] = empire;
@@ -114,7 +149,7 @@ module.exports = function(raw){
             // find who is in control of system - eq. who is in control of planets in system
             star.influencedBy = star.planets
                 // map with controlled planets by empires
-                .map(planetId => data.planets[planetId])
+                .map(planetId => JSON.parse(JSON.stringify(data.planets[planetId])))
                 .filter(planet => !!planet.controlledBy)
                 .filter(planet => { return { controlledBy: planet.controlledBy, populationCount: planet.populationCount }; })
                 .reduce((prev, planet) => {
@@ -138,7 +173,7 @@ module.exports = function(raw){
             return star;
         })
         .reduce((prev, curr) => {
-            prev[curr.name] = curr;
+            prev[curr.id] = curr;
             return prev;
         }, {});
 
