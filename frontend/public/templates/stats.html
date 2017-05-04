@@ -1,9 +1,9 @@
 <html>
 <head>
     <title>stellaris.social</title>
-    <link rel="stylesheet" type="text/css" href="reset.css">
-    <script src="/dist/stats/stats.js"></script>
-    <script src="/dist/three/three.js"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/reset.css">
+    <script src="/assets/dist/stats/stats.js"></script>
+    <script src="/assets/dist/three/three.js"></script>
     <style>
         canvas {
             width: 100%;
@@ -69,7 +69,7 @@
             let cameraOrthographic = new THREE.OrthographicCamera( window.innerWidth / - 1, window.innerWidth / 1, window.innerHeight / 1, window.innerHeight / - 1, 1, 3000 );
 
             let camera = cameraPerspective;
-            camera.position.set(0, 0, 1000);
+            camera.position.set(0, 0, 1200);
             camera.lookAt(new THREE.Vector3(0, 0, 0));
 
             let renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
