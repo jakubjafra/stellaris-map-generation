@@ -120,6 +120,17 @@ def generate_dependencies(dot, data):
         dot.subgraph(graph=cluster)
 
 
+def generate_hyperlanes_graph(dot, data):
+    for i, name in enumerate(data['stars']):
+        star = data['stars'][name]
+
+        dot.node(star['id'], shape='none')
+
+        for id in star['hyperlanes']:
+            hyperlane = star['hyperlanes'][id]
+            dot.edge(star['id'], hyperlane['to'])
+
+
 def execute():
     stars_file = open('../../samples/end-game/basics.json')
     data = json.loads(stars_file.read())
@@ -140,5 +151,9 @@ def execute():
     dot = Graph(strict='true')
     generate_dependencies(dot, data)
     dot.render('./tests/independencies.dot')
+
+    dot = Graph(strict='true')
+    generate_hyperlanes_graph(dot, data)
+    dot.render('./tests/hyperlanes.dot')
 
 execute()

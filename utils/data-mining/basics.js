@@ -48,13 +48,26 @@ module.exports = function(raw){
                 },
                 type: o['type'],
                 name: o['name'],
-                planets: planets.map(pId => `${pId}`)
+                planets: planets.map(pId => `${pId}`),
+                hyperlanes: []
             };
 
             planets
                 .forEach(planetId => {
                     planetToStar[planetId] = o.name;
                 });
+
+            star.hyperlanes = o['hyperlane']
+                .map(hyperlane => {
+                    return {
+                        to: `${hyperlane['to']}`,
+                        length: hyperlane['length']
+                    }
+                })
+                .reduce((prev, curr) => {
+                    prev[curr.to] = curr;
+                    return prev;
+                }, {});
 
             data.stars[`${o['id']}`] = star;
         });

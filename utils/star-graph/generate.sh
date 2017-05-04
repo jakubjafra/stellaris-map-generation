@@ -3,6 +3,7 @@
 python json2graph.py
 neato tests/all-stars.dot -n -Tpng -o tests/all-stars.png
 neato tests/sectors.dot -n -Tpng -o tests/sectors.png
+neato tests/hyperlanes.dot -Tpng -o tests/hyperlanes.png
 gvmap -D -c 8 -a 0 -b -1 -o tests/empires-influence.dot tests/empires.dot
 gvmap -D -O -c 8 -a 0 -b -1 -o tests/all-stars-influence.dot tests/all-stars.dot
 gvmap -D -O -c 8 -a 0 -b -1 -o tests/sectors-influence.dot tests/sectors.dot
