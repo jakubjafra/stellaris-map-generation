@@ -91,17 +91,54 @@ def generate_empires(dot, data):
         dot.subgraph(graph=cluster)
 
 
-starsFile = open('../../samples/end-game/stars.json')
-data = json.loads(starsFile.read())
+def generate_dependencies(dot, data):
+    clusters = {}
 
-dot = Graph(strict='true')
-generate_all_stars(dot, data)
-dot.render('./tests/all-stars.dot')
+    for i, name in enumerate(data['stars']):
+        star = data['stars'][name]
 
-dot = Graph(strict='true')
-generate_sectors(dot, data)
-dot.render('./tests/sectors.dot')
+        pos = '{},{}!'.format(star['cords']['x'], star['cords']['y'])
+        empire = None
 
-dot = Graph(strict='true')
-generate_empires(dot, data)
-dot.render('./tests/empires.dot')
+        if len(star['influencedBy']) > 0:
+            influence_id = star['influencedBy'][0]['controlledBy']
+            empire = data['empires'][influence_id]
+
+        def put_node(graph, cluster_id):
+            graph.node(name, pos=pos, shape='none', clustercolor=cluster_id)
+
+        if empire:
+            cluster_id = empire['political_status']['independency']
+
+            if cluster_id not in clusters:
+                clusters[cluster_id] = Graph(name='cluster{}'.format(cluster_id), graph_attr={'id': cluster_id})
+
+            put_node(clusters[cluster_id], cluster_id)
+
+    for name in clusters:
+        cluster = clusters[name]
+        dot.subgraph(graph=cluster)
+
+
+def execute():
+    stars_file = open('../../samples/end-game/basics.json')
+    data = json.loads(stars_file.read())
+    stars_file.close()
+
+    dot = Graph(strict='true')
+    generate_all_stars(dot, data)
+    dot.render('./tests/all-stars.dot')
+
+    dot = Graph(strict='true')
+    generate_sectors(dot, data)
+    dot.render('./tests/sectors.dot')
+
+    dot = Graph(strict='true')
+    generate_empires(dot, data)
+    dot.render('./tests/empires.dot')
+
+    dot = Graph(strict='true')
+    generate_dependencies(dot, data)
+    dot.render('./tests/independencies.dot')
+
+execute()

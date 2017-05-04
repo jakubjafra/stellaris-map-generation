@@ -12,10 +12,19 @@ module.exports = function(raw){
     }
 
     let data = {
+        galaxy: {},
         stars: {},
-        starsRadius: 0,
         planets: {},
-        empires: {}
+        empires: {},
+        alliances: {},
+        independencies: {}
+    };
+
+    data.galaxy.shape = raw['galaxy']['shape'];
+    data.galaxy.size = raw['galaxy']['template'];
+    data.galaxy.radius = {
+        core: raw['galaxy']['core_radius'],
+        all: raw['galaxy_radius']
     };
 
     let planetToStar = {};
@@ -41,11 +50,6 @@ module.exports = function(raw){
                 name: o['name'],
                 planets: planets.map(pId => `${pId}`)
             };
-
-            const distance = Math.sqrt(Math.pow(star.cords.x, 2) + Math.pow(star.cords.y, 2));
-
-            if(distance > data.starsRadius)
-                data.starsRadius = Math.ceil(distance);
 
             planets
                 .forEach(planetId => {
@@ -78,6 +82,20 @@ module.exports = function(raw){
         });
 
     Object
+        .keys(raw["alliance"])
+        .forEach(i => {
+            const o = raw["alliance"][i];
+
+            data.alliances[`${i}`] = {
+                id: `${i}`,
+                name: o["name"],
+                members: o["members"].map(id => `${id}`),
+                associates: o["associates"].map(id => `${id}`),
+                created_at: o["start_date"]
+            };
+        });
+
+    Object
         .keys(raw["country"])
         .forEach(i => {
             const o = raw["country"][i];
@@ -90,7 +108,14 @@ module.exports = function(raw){
                 name: o["name"],
                 type: o["type"],
                 colors: o["flag"] !== undefined ? o["flag"].colors : undefined,
-                sectors: []
+                sectors: [],
+                military: {
+                    power: o["military_power"],
+                    size: o["fleet_size"]
+                },
+                political_status: {
+                    type: "independent"
+                }
             };
 
             let controlledPlanets = {};
@@ -133,18 +158,78 @@ module.exports = function(raw){
                         prev[curr.id] = curr;
                         return prev;
                     }, {});
-
-                if(empire.sectors == [])
-                    console.log("DUPA");
             }
 
             data.empires[i] = empire;
         });
 
+    data.empires = Object
+        .keys(data.empires)
+        .map(id => data.empires[id])
+        .map(empire => {
+            const o = raw["country"][empire.id];
+
+            if(o["subject_type"] !== undefined && o["subject_type"] === "vassal"){
+                empire.political_status.type = "vassal";
+                empire.political_status.overlord = `${o["overlord"]}`;
+
+                const overlord = raw["country"][o["overlord"]];
+                if(overlord["alliance"] !== undefined){
+                    empire.political_status.alliance = `${overlord["alliance"]}`;
+                }
+            }
+
+            if(o["alliance"] !== undefined){
+                empire.political_status.type = "alliance_member";
+                empire.political_status.alliance = `${o['alliance']}`;
+            }
+
+            (function(){
+                function idToHash(id) {
+                    return `${id}`.slice(-5);
+                }
+
+                let type = "empire";
+                let type_id = empire.id;
+
+                if(empire.political_status.overlord !== undefined) {
+                    type_id = empire.political_status.overlord;
+                }
+                if(empire.political_status.alliance !== undefined) {
+                    type = "alliance";
+                    type_id = empire.political_status.alliance;
+                }
+
+                let independency_id = `${type === "empire" ? "E" : "A"}${idToHash(type_id)}`;
+
+                if(data.independencies[independency_id] === undefined) {
+                    data.independencies[independency_id] = {
+                        type,
+                        type_id,
+                        id: independency_id,
+                        empires: [empire["id"]]
+                    };
+                } else
+                    data.independencies[independency_id].empires.push(empire.id);
+
+                empire.political_status.independency = independency_id;
+            })();
+
+            return empire;
+        })
+        .reduce((prev, curr) => {
+            prev[curr.id] = curr;
+            return prev;
+        }, {});
+
     data.stars = Object
         .keys(data.stars)
         .map(i => {
             let star = data.stars[i];
+
+            star.planets.forEach(id => {
+                data.planets[id].star = star.id;
+            });
 
             // find who is in control of system - eq. who is in control of planets in system
             star.influencedBy = star.planets

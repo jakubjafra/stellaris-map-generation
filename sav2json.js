@@ -1,6 +1,6 @@
 const fs = require('fs');
 const jomini = require('jomini');
-const handleData = require('./utils/data-mining/stars.js');
+const handleBasics = require('./utils/data-mining/basics.js');
 
 const testedFile = 'end-game';
 
@@ -15,5 +15,5 @@ try {
     fs.writeFileSync(`./samples/${testedFile}/gamestate.json`, JSON.stringify(save));
 }
 
-const stars = handleData(save);
-fs.writeFileSync(`./samples/${testedFile}/stars.json`, JSON.stringify(stars));
+const basics = handleBasics(save);
+fs.writeFileSync(`./samples/${testedFile}/basics.json`, JSON.stringify(basics));

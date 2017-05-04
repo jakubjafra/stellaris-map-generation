@@ -94,9 +94,39 @@
 
             const extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
 
-            request('/api/end-game/stars.json', function(data) {
-                plotSectors(data);
+            request('/api/end-game/basics.json', function(data) {
+                plotIndependencies(data);
             });
+
+            function plotIndependencies(data){
+                request('/api/end-game/graphs/_independencies-influence.json', function(independenciesInfluence) {
+                    Object
+                        .keys(independenciesInfluence)
+                        .map(key => independenciesInfluence[key])
+                        .forEach(independency => {
+                            let color = '#' + independency['id'].repeat(Math.floor(6 / independency['id'].length));
+
+                            console.log(independency['id'], color);
+
+                            const originalConsoleWarn = console.warn;
+                            console.warn = () => undefined;
+                            independency['polygons'].forEach(polygon => {
+                                let points = polygon
+                                    .map(vertex => new THREE.Vector2(parseFloat(vertex['x']), parseFloat(vertex['y'])));
+
+                                let shape = new THREE.Shape(points);
+                                let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+
+                                let mesh = new THREE.Mesh(geometry, new THREE.MeshToonMaterial({ color }));
+                                mesh.position.set(0, 0, 0);
+                                mesh.rotation.set(0, 0, 0);
+                                mesh.scale.set(1, 1, 1);
+                                scene.add(mesh);
+                            });
+                            console.warn = originalConsoleWarn;
+                        });
+                });
+            }
 
             function plotSectors(data){
                 request('/api/end-game/graphs/_sectors-influence.json', function(sectorsInfluence) {
