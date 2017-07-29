@@ -33,6 +33,6 @@ To run scripts you need an Unix system with:
 * ```bash```
 * ```graphviz``` and ```neato``` execs on the system
 * ```node.js``` (tested on ```v6.9.4```)
-* ```python``` (it's using ```2.7.13``` for some reason... not sure if the libs are working)
+* ```python``` (it's using ```2.7.13``` for some reason... not sure if the libs are working with Python 3)
 * installed dependencies (```npm i```, ```pip install -r utils/star-graph/requirments.txt```)
 * feel free to update this if I forgot about some lib
