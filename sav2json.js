@@ -1,19 +1,14 @@
 const fs = require('fs');
 const jomini = require('jomini');
-const handleBasics = require('./utils/data-mining/basics.js');
+const handleBasics = require('./data-parser/basics.js');
 
-const testedFile = 'end-game';
+const fileToProcess = process.argv[2];
+const outputDir = process.argv[3] || "./tmp";
 
-let save = null;
+const file = fs.readFileSync(fileToProcess).toString();
 
-try {
-    const jsonFile = fs.readFileSync(`./samples/${testedFile}/gamestate.json`);
-    save = JSON.parse(jsonFile.toString());
-} catch(e){
-    const file = fs.readFileSync(`./samples/${testedFile}/gamestate`).toString();
-    save = jomini.parse(file);
-    fs.writeFileSync(`./samples/${testedFile}/gamestate.json`, JSON.stringify(save));
-}
+let save = jomini.parse(file);
+fs.writeFileSync(`${outputDir}/gamestate.json`, JSON.stringify(save));
 
 const basics = handleBasics(save);
-fs.writeFileSync(`./samples/${testedFile}/basics.json`, JSON.stringify(basics));
+fs.writeFileSync(`${outputDir}/basics.json`, JSON.stringify(basics));

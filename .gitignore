@@ -65,3 +65,5 @@ typings/
 backend/utils/star-graph/tests
 backend/samples
 dist
+samples
+tmp

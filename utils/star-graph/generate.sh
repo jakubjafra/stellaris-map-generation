@@ -1,21 +1,25 @@
 #!/usr/bin/env bash
 
-python json2graph.py
-neato tests/all-stars.dot -n -Tpng -o tests/all-stars.png
-neato tests/sectors.dot -n -Tpng -o tests/sectors.png
-neato tests/hyperlanes.dot -Tpng -o tests/hyperlanes.png
-gvmap -D -c 8 -a 0 -b -1 -o tests/empires-influence.dot tests/empires.dot
-gvmap -D -O -c 8 -a 0 -b -1 -o tests/all-stars-influence.dot tests/all-stars.dot
-gvmap -D -O -c 8 -a 0 -b -1 -o tests/sectors-influence.dot tests/sectors.dot
-gvmap -D -O -c 8 -a 0 -b -1 -o tests/independencies-influence.dot tests/independencies.dot
-python graph2polygons.py empires-influence
-python graph2polygons.py all-stars-influence
-python graph2polygons.py sectors-influence
-python graph2polygons.py independencies-influence
-neato tests/empires-influence.dot -n -Tpng -o tests/empires-influence.png
-neato tests/all-stars-influence.dot -n -Tpng -o tests/all-stars-influence.png
-neato tests/sectors-influence.dot -n -Tpng -o tests/sectors-influence.png
-neato tests/independencies-influence.dot -n -Tpng -o tests/independencies-influence.png
-python merge.py
-neato tests/merged.dot -n -Tpng -o tests/merged.png
-neato tests/only-map.dot -n -Tpng -o tests/only-map.png
+SOURCEDIR_TMP='../../tmp'
+WORKDIR_TMP='../../tmp/tmp-map-gen'
+mkdir -p $WORKDIR_TMP
+
+python json2graph.py $SOURCEDIR_TMP $WORKDIR_TMP
+neato $WORKDIR_TMP/all-stars.dot -n -Tpng -o $WORKDIR_TMP/all-stars.png
+neato $WORKDIR_TMP/sectors.dot -n -Tpng -o $WORKDIR_TMP/sectors.png
+neato $WORKDIR_TMP/hyperlanes.dot -Tpng -o $WORKDIR_TMP/hyperlanes.png
+gvmap -D -c 8 -a 0 -b -1 -o $WORKDIR_TMP/empires-influence.dot $WORKDIR_TMP/empires.dot
+gvmap -D -O -c 8 -a 0 -b -1 -o $WORKDIR_TMP/all-stars-influence.dot $WORKDIR_TMP/all-stars.dot
+gvmap -D -O -c 8 -a 0 -b -1 -o $WORKDIR_TMP/sectors-influence.dot $WORKDIR_TMP/sectors.dot
+gvmap -D -O -c 8 -a 0 -b -1 -o $WORKDIR_TMP/independencies-influence.dot $WORKDIR_TMP/independencies.dot
+python graph2polygons.py $WORKDIR_TMP empires-influence
+python graph2polygons.py $WORKDIR_TMP all-stars-influence
+python graph2polygons.py $WORKDIR_TMP sectors-influence
+python graph2polygons.py $WORKDIR_TMP independencies-influence
+neato $WORKDIR_TMP/empires-influence.dot -n -Tpng -o $WORKDIR_TMP/empires-influence.png
+neato $WORKDIR_TMP/all-stars-influence.dot -n -Tpng -o $WORKDIR_TMP/all-stars-influence.png
+neato $WORKDIR_TMP/sectors-influence.dot -n -Tpng -o $WORKDIR_TMP/sectors-influence.png
+neato $WORKDIR_TMP/independencies-influence.dot -n -Tpng -o $WORKDIR_TMP/independencies-influence.png
+python merge.py $WORKDIR_TMP
+neato $WORKDIR_TMP/merged.dot -n -Tpng -o $WORKDIR_TMP/merged.png
+neato $WORKDIR_TMP/only-map.dot -n -Tpng -o $WORKDIR_TMP/only-map.png

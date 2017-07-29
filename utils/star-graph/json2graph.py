@@ -1,5 +1,6 @@
 from graphviz import Graph
 import json
+import sys
 
 
 def generate_all_stars(dot, data):
@@ -50,7 +51,7 @@ def generate_sectors(dot, data):
                         sector_id = sector['id']
 
             if sector_id is None:
-                print empire
+                continue
 
             if sector_id not in clusters:
                 clusters[sector_id] = Graph(name='cluster{}'.format(sector_id), graph_attr={'id': sector_id})
@@ -131,29 +132,29 @@ def generate_hyperlanes_graph(dot, data):
             dot.edge(star['id'], hyperlane['to'])
 
 
-def execute():
-    stars_file = open('../../samples/end-game/basics.json')
+def execute(sourcepath, outputpath):
+    stars_file = open('{}/basics.json'.format(sourcepath))
     data = json.loads(stars_file.read())
     stars_file.close()
 
     dot = Graph(strict='true')
     generate_all_stars(dot, data)
-    dot.render('./tests/all-stars.dot')
+    dot.render('{}/all-stars.dot'.format(outputpath))
 
     dot = Graph(strict='true')
     generate_sectors(dot, data)
-    dot.render('./tests/sectors.dot')
+    dot.render('{}/sectors.dot'.format(outputpath))
 
     dot = Graph(strict='true')
     generate_empires(dot, data)
-    dot.render('./tests/empires.dot')
+    dot.render('{}/empires.dot'.format(outputpath))
 
     dot = Graph(strict='true')
     generate_dependencies(dot, data)
-    dot.render('./tests/independencies.dot')
+    dot.render('{}/independencies.dot'.format(outputpath))
 
     dot = Graph(strict='true')
     generate_hyperlanes_graph(dot, data)
-    dot.render('./tests/hyperlanes.dot')
+    dot.render('{}/hyperlanes.dot'.format(outputpath))
 
-execute()
+execute(sys.argv[1], sys.argv[2])

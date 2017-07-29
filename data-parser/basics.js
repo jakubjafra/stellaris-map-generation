@@ -99,13 +99,15 @@ module.exports = function(raw){
         .forEach(i => {
             const o = raw["alliance"][i];
 
-            data.alliances[`${i}`] = {
-                id: `${i}`,
-                name: o["name"],
-                members: o["members"].map(id => `${id}`),
-                associates: o["associates"].map(id => `${id}`),
-                created_at: o["start_date"]
-            };
+            if(typeof o === "object") {
+                data.alliances[`${i}`] = {
+                    id: `${i}`,
+                    name: o["name"],
+                    members: o["members"].map(id => `${id}`),
+                    associates: o["associates"].map(id => `${id}`),
+                    created_at: o["start_date"]
+                };
+            }
         });
 
     Object

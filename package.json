@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jomini": "^0.2.7"
+    "jomini": "^0.2.7",
+    "mkdirp": "^0.5.1"
   }
 }

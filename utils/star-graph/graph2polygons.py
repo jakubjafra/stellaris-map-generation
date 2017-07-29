@@ -2,9 +2,10 @@ import re
 import json
 import sys
 
-file_name = sys.argv[1]
+workdir = sys.argv[1]
+file_name = sys.argv[2]
 
-influences_file = open('./tests/{}.dot'.format(file_name), 'r')
+influences_file = open('{}/{}.dot'.format(workdir, file_name), 'r')
 influences = influences_file.read()
 influences_file.close()
 
@@ -59,6 +60,6 @@ for cluster_str in clusters_raw[1:]:
         'polygons': graph_polygons
     }
 
-graph_file = open('./tests/_{}.json'.format(file_name), 'w+')
+graph_file = open('{}/_{}.json'.format(workdir, file_name), 'w+')
 graph_file.write(json.dumps(clusters))
 graph_file.close()
