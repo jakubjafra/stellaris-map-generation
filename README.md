@@ -11,6 +11,7 @@ Simple set of scripts bundled together with bash that:
   * sectors
   * "independencies" - alliances and independent empires
 * those files can be used combined with data from save game to generate nice graphs with detailed information about game
+* **take a look at [basic usage repository](https://github.com/khronedev/stellaris-map-generation-basic-usage) for more details**
 
 Usage
 -----
